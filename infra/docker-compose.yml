@@ -6,12 +6,12 @@
 #   backend   – Spring Boot REST API
 #   frontend  – Next.js web application
 #
-# Start everything:
-#   docker compose up          (from the /infra directory)
-#   docker compose up --build  (rebuild images after code changes)
+# Start everything (run from the REPOSITORY ROOT so .env is found automatically):
+#   docker compose -f infra/docker-compose.yml up
+#   docker compose -f infra/docker-compose.yml up --build   (after code changes)
 #
-# Environment variables are loaded from ../.env
-# Copy .env.example to .env before running.
+# .env is read from the current working directory (the repo root).
+# Copy .env.example to .env before the first run.
 # =============================================================================
 
 services:

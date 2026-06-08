@@ -1,0 +1,31 @@
+# =============================================================================
+# Railway – Backend Service Configuration
+#
+# Railway reads this file from the root of the service's source directory.
+# Docs: https://docs.railway.com/reference/config-as-code
+#
+# REQUIRED ENVIRONMENT VARIABLES (set in Railway dashboard → Variables):
+#
+#   From the Postgres plugin (copy using the "Reference" button in Railway):
+#     DB_HOST     = ${{Postgres.PGHOST}}
+#     DB_PORT     = ${{Postgres.PGPORT}}
+#     DB_NAME     = ${{Postgres.PGDATABASE}}
+#     DB_USER     = ${{Postgres.PGUSER}}
+#     DB_PASSWORD = ${{Postgres.PGPASSWORD}}
+#
+#   CORS (set to your frontend's Railway public URL after deploying it):
+#     CORS_ALLOWED_ORIGINS = https://<your-frontend>.up.railway.app
+#
+# NOTE: PORT is injected automatically by Railway – do NOT set it manually.
+# =============================================================================
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# Spring Boot Actuator health endpoint – Railway polls this to confirm startup
+healthcheckPath = "/actuator/health"
+healthcheckTimeout = 120        # seconds – Java startup can take a moment
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

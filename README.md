@@ -21,7 +21,7 @@ Make sure the following are installed before the workshop:
 
 ---
 
-## Quick Start
+## Quick Start (Local – Docker Compose)
 
 ```bash
 # 1. Clone the repository
@@ -31,9 +31,8 @@ cd idea-to-production
 # 2. Create your environment file
 cp .env.example .env
 
-# 3. Start everything
-cd infra
-docker compose up --build
+# 3. Start everything – run from the REPO ROOT so .env is found automatically
+docker compose -f infra/docker-compose.yml up --build
 ```
 
 Once the containers are running:
@@ -139,24 +138,27 @@ Work through these in order. Each checkpoint builds on the previous one.
 ## Useful Commands
 
 ```bash
-# Rebuild and restart all containers
-docker compose up --build
+# Rebuild and restart all containers (always run from repo root)
+docker compose -f infra/docker-compose.yml up --build
 
 # View logs for a specific service
-docker compose logs -f backend
-docker compose logs -f frontend
-docker compose logs -f postgres
+docker compose -f infra/docker-compose.yml logs -f backend
+docker compose -f infra/docker-compose.yml logs -f frontend
+docker compose -f infra/docker-compose.yml logs -f postgres
 
 # Stop all containers
-docker compose down
+docker compose -f infra/docker-compose.yml down
 
 # Stop and delete all data (volumes)
-docker compose down -v
+docker compose -f infra/docker-compose.yml down -v
 
 # Run backend tests (requires Java 21 locally)
 cd backend && ./gradlew test
 
-# Install frontend dependencies (requires Node.js locally)
+# Run frontend tests (requires Node.js locally)
+cd frontend && npm test
+
+# Start frontend in dev mode (requires Node.js locally)
 cd frontend && npm install && npm run dev
 ```
 
@@ -176,18 +178,121 @@ cd frontend && npm install && npm run dev
 
 ---
 
+## Deploying to Railway
+
+[Railway](https://railway.com) is a cloud platform that can host all three services. The flow below takes about 10–15 minutes.
+
+### Architecture on Railway
+
+```
+[Browser]
+    │  HTTPS
+    ▼
+[Frontend service]          ← Next.js, public URL
+    │  HTTPS (NEXT_PUBLIC_API_URL)
+    ▼
+[Backend service]           ← Spring Boot, public URL
+    │  Private network
+    ▼
+[Postgres plugin]           ← managed PostgreSQL
+```
+
+### Step-by-step
+
+**1 – Create a Railway project**
+
+Sign in at [railway.com](https://railway.com) → **New Project** → **Empty project**.
+
+---
+
+**2 – Add a PostgreSQL database**
+
+Inside the project → **+ New** → **Database** → **Add PostgreSQL**.
+
+Railway creates the database and exposes connection variables (`PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`) automatically.
+
+---
+
+**3 – Deploy the backend**
+
+- **+ New** → **GitHub Repo** → select your repo → set **Root Directory** to `backend`.
+- Railway detects `backend/railway.toml` and uses the `backend/Dockerfile`.
+- Go to the backend service → **Variables** → add:
+
+| Variable | Value (click "Reference" to pick from Postgres plugin) |
+|---|---|
+| `DB_HOST` | `${{Postgres.PGHOST}}` |
+| `DB_PORT` | `${{Postgres.PGPORT}}` |
+| `DB_NAME` | `${{Postgres.PGDATABASE}}` |
+| `DB_USER` | `${{Postgres.PGUSER}}` |
+| `DB_PASSWORD` | `${{Postgres.PGPASSWORD}}` |
+
+- Still in Variables, enable a **Public Domain** for the backend and copy the URL
+  (e.g. `https://taskflow-backend-production.up.railway.app`).
+
+---
+
+**4 – Deploy the frontend**
+
+- **+ New** → **GitHub Repo** → same repo → set **Root Directory** to `frontend`.
+- Railway detects `frontend/railway.toml` and uses the `frontend/Dockerfile`.
+- Go to the frontend service → **Variables** → add:
+
+| Variable | Value |
+|---|---|
+| `NEXT_PUBLIC_API_URL` | `https://taskflow-backend-production.up.railway.app` (your backend URL from step 3) |
+
+> ⚠️ `NEXT_PUBLIC_API_URL` is embedded into the JavaScript bundle **at build time**.
+> Set it **before** clicking Deploy (or redeploy after setting it).
+
+- Enable a **Public Domain** for the frontend and open the URL to verify.
+
+---
+
+**5 – Update backend CORS**
+
+Now that you know the frontend's Railway URL, go back to the **backend** service → **Variables** → add:
+
+| Variable | Value |
+|---|---|
+| `CORS_ALLOWED_ORIGINS` | `https://taskflow-frontend-production.up.railway.app` |
+
+Railway will automatically redeploy the backend.
+
+---
+
+### Summary of Railway environment variables
+
+| Service | Variable | Where it comes from |
+|---|---|---|
+| Backend | `DB_HOST` … `DB_PASSWORD` | Reference from Postgres plugin |
+| Backend | `CORS_ALLOWED_ORIGINS` | Your frontend's Railway public URL |
+| Backend | `PORT` | **Injected automatically** – do not set |
+| Frontend | `NEXT_PUBLIC_API_URL` | Your backend's Railway public URL |
+| Frontend | `PORT` | **Injected automatically** – do not set |
+
+---
+
 ## Troubleshooting
 
-**`docker compose up` fails – port already in use**
-> Change the port in `.env` (e.g. `BACKEND_PORT=8081`) and restart.
+**`docker compose` fails – port already in use**
+> Change the port in `.env` (e.g. `BACKEND_PORT=8081`) and rerun from the repo root.
 
 **Backend can't connect to the database**
 > Make sure the `postgres` service is healthy before the backend starts.
-> Run `docker compose logs postgres` to check.
+> `docker compose -f infra/docker-compose.yml logs postgres`
 
 **Frontend shows "not implemented yet" errors**
 > That's expected! Follow the checkpoints to implement the API client.
 
 **Changes to source code aren't reflected**
-> Run `docker compose up --build` to rebuild the images.
+> `docker compose -f infra/docker-compose.yml up --build`
+
+**Railway deploy fails – healthcheck timeout**
+> Java startup can be slow on Railway's free tier. The `railway.toml` already sets
+> `healthcheckTimeout = 120`. If it still times out, try deploying again.
+
+**Railway frontend shows old backend URL**
+> `NEXT_PUBLIC_API_URL` is baked at build time. Update the variable in the Railway
+> dashboard and click **Redeploy** to rebuild the image with the new URL.
 

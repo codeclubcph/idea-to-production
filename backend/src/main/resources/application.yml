@@ -3,9 +3,13 @@ spring:
     name: taskflow
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:taskflow}
-    username: ${DB_USER:taskflow}
-    password: ${DB_PASSWORD:taskflow}
+    # Resolution order for each variable:
+    #   1. DB_*  – set by Docker Compose (local) or manually in Railway dashboard
+    #   2. PG*   – provided automatically by Railway's Postgres plugin
+    #   3. hard-coded fallback for bare `java -jar` local runs
+    url: jdbc:postgresql://${DB_HOST:${PGHOST:localhost}}:${DB_PORT:${PGPORT:5432}}/${DB_NAME:${PGDATABASE:taskflow}}
+    username: ${DB_USER:${PGUSER:taskflow}}
+    password: ${DB_PASSWORD:${PGPASSWORD:taskflow}}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -18,7 +22,8 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
 server:
-  port: ${SERVER_PORT:8080}
+  # PORT is injected by Railway. SERVER_PORT is used by Docker Compose. 8080 is the bare fallback.
+  port: ${PORT:${SERVER_PORT:8080}}
 
 management:
   endpoints:
