@@ -217,15 +217,19 @@ Railway creates the database and exposes connection variables (`PGHOST`, `PGPORT
 
 - **+ New** → **GitHub Repo** → select your repo → set **Root Directory** to `backend`.
 - Railway detects `backend/railway.toml` and uses the `backend/Dockerfile`.
-- Go to the backend service → **Variables** → add:
+- Go to the backend service → **Variables** → add **all five** of these:
 
-| Variable | Value (click "Reference" to pick from Postgres plugin) |
+| Variable | Value (use the "Reference" picker in Railway) |
 |---|---|
-| `DB_HOST` | `${{Postgres.PGHOST}}` |
+| `DB_HOST` | `${{Postgres.PGHOST}}` ← easy to forget! |
 | `DB_PORT` | `${{Postgres.PGPORT}}` |
 | `DB_NAME` | `${{Postgres.PGDATABASE}}` |
 | `DB_USER` | `${{Postgres.PGUSER}}` |
 | `DB_PASSWORD` | `${{Postgres.PGPASSWORD}}` |
+
+> ⚠️ **All five variables are required.** If `DB_HOST` is missing the backend will
+> silently fall back to `localhost`, which doesn't resolve inside Railway's network,
+> and the database connection will fail.
 
 - Still in Variables, enable a **Public Domain** for the backend and copy the URL
   (e.g. `https://taskflow-backend-production.up.railway.app`).
@@ -263,13 +267,17 @@ Railway will automatically redeploy the backend.
 
 ### Summary of Railway environment variables
 
-| Service | Variable | Where it comes from |
+| Service | Variable | Value |
 |---|---|---|
-| Backend | `DB_HOST` … `DB_PASSWORD` | Reference from Postgres plugin |
-| Backend | `CORS_ALLOWED_ORIGINS` | Your frontend's Railway public URL |
-| Backend | `PORT` | **Injected automatically** – do not set |
-| Frontend | `NEXT_PUBLIC_API_URL` | Your backend's Railway public URL |
-| Frontend | `PORT` | **Injected automatically** – do not set |
+| Backend | `DB_HOST` | `${{Postgres.PGHOST}}` |
+| Backend | `DB_PORT` | `${{Postgres.PGPORT}}` |
+| Backend | `DB_NAME` | `${{Postgres.PGDATABASE}}` |
+| Backend | `DB_USER` | `${{Postgres.PGUSER}}` |
+| Backend | `DB_PASSWORD` | `${{Postgres.PGPASSWORD}}` |
+| Backend | `CORS_ALLOWED_ORIGINS` | `https://<your-frontend>.up.railway.app` |
+| Backend | `PORT` | **Injected automatically – do not set** |
+| Frontend | `NEXT_PUBLIC_API_URL` | `https://<your-backend>.up.railway.app` |
+| Frontend | `PORT` | **Injected automatically – do not set** |
 
 ---
 
@@ -287,6 +295,12 @@ Railway will automatically redeploy the backend.
 
 **Changes to source code aren't reflected**
 > `docker compose -f infra/docker-compose.yml up --build`
+
+**Railway – backend starts but cannot connect to the database**
+> The most common cause is a missing `DB_HOST` variable. Check that all five
+> `DB_*` variables are set in the backend service's Railway Variables tab.
+> If `DB_HOST` is absent, Spring Boot falls back to `localhost`, which does not
+> resolve to PostgreSQL inside Railway's private network.
 
 **Railway deploy fails – healthcheck timeout**
 > Java startup can be slow on Railway's free tier. The `railway.toml` already sets
