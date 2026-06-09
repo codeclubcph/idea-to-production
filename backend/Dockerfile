@@ -39,4 +39,4 @@ COPY --from=builder /workspace/build/libs/*.jar app.jar
 EXPOSE 8080
 
 # Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Djava.net.preferIPv6Addresses=true", "-jar", "app.jar"]
