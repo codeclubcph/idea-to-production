@@ -231,7 +231,7 @@ Railway creates the database and exposes connection variables (`PGHOST`, `PGPORT
 > silently fall back to `localhost`, which doesn't resolve inside Railway's network,
 > and the database connection will fail.
 
-- Still in Variables, enable a **Public Domain** for the backend and copy the URL
+- In Settings, enable a **Public Domain** for the backend and copy the URL
   (e.g. `https://taskflow-backend-production.up.railway.app`).
 
 ---
