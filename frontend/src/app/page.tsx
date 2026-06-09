@@ -11,9 +11,10 @@
 import { fetchTasks } from "@/lib/api";
 import TaskList from "@/components/TaskList";
 import TaskFormWrapper from "@/components/TaskFormWrapper";
+import type { Task } from "@/types/task";
 
 export default async function HomePage() {
-  let tasks = [];
+  let tasks: Task[] = [];
   let fetchError: string | null = null;
 
   try {
