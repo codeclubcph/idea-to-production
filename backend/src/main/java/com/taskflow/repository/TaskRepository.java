@@ -1,8 +1,11 @@
 package com.taskflow.repository;
 
 import com.taskflow.model.Task;
+import com.taskflow.model.TaskStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * The repository layer is responsible for talking to the database.
@@ -29,10 +32,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    // TODO [Checkpoint 1]: Add custom finder methods below
-    //
-    // Example:
-    //   List<Task> findByStatus(TaskStatus status);
-    //   List<Task> findByTitleContainingIgnoreCase(String keyword);
+    /**
+     * Returns all tasks that match the given status.
+     * Spring Data JPA derives the SQL from the method name automatically.
+     */
+    List<Task> findByStatus(TaskStatus status);
 
 }

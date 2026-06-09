@@ -3,7 +3,6 @@ package com.taskflow.repository;
 import com.taskflow.model.Task;
 import com.taskflow.model.TaskStatus;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +32,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @ActiveProfiles("test")
 @DisplayName("Checkpoint 1 – TaskRepository")
-@Disabled
 class TaskRepositoryTest {
 
     @Autowired
@@ -100,7 +98,6 @@ class TaskRepositoryTest {
     // -------------------------------------------------------------------------
 
     @Test
-    @Disabled("Checkpoint 1: Add findByStatus(TaskStatus) to TaskRepository, then remove @Disabled")
     @DisplayName("[CP-1] findByStatus() returns only tasks with the given status")
     void findByStatus_returnsOnlyMatchingTasks() {
         Task todo      = new Task("Todo task", null);
@@ -110,9 +107,8 @@ class TaskRepositoryTest {
         taskRepository.save(todo);
         taskRepository.save(inProgress);
 
-        // Uncomment the line below and add the method to TaskRepository:
-        // List<Task> results = taskRepository.findByStatus(TaskStatus.IN_PROGRESS);
-        // assertThat(results).hasSize(1);
-        // assertThat(results.get(0).getTitle()).isEqualTo("In-progress task");
+        List<Task> results = taskRepository.findByStatus(TaskStatus.IN_PROGRESS);
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getTitle()).isEqualTo("In-progress task");
     }
 }

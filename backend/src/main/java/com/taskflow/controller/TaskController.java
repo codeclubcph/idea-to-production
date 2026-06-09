@@ -2,8 +2,10 @@ package com.taskflow.controller;
 
 import com.taskflow.model.Task;
 import com.taskflow.service.TaskService;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * The TaskController exposes the Task REST API.
@@ -45,6 +47,44 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-    // TODO [Checkpoint 3]: Add your endpoint methods here
+    // GET /api/tasks
+    @GetMapping
+    public ResponseEntity<List<Task>> getAllTasks() {
+        return ResponseEntity.ok(taskService.getAllTasks());
+    }
+
+    // GET /api/tasks/{id}
+    @GetMapping("/{id}")
+    public ResponseEntity<Task> getTaskById(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(taskService.getTaskById(id));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // POST /api/tasks
+    @PostMapping
+    public ResponseEntity<Task> createTask(@RequestBody Task task) {
+        Task created = taskService.createTask(task);
+        return ResponseEntity.status(201).body(created);
+    }
+
+    // PUT /api/tasks/{id}
+    @PutMapping("/{id}")
+    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task task) {
+        try {
+            return ResponseEntity.ok(taskService.updateTask(id, task));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // DELETE /api/tasks/{id}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
+        taskService.deleteTask(id);
+        return ResponseEntity.noContent().build();
+    }
 
 }
