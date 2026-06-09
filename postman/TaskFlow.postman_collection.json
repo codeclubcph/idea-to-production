@@ -1,0 +1,199 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "TaskFlow API",
+    "description": "Workshop API collection for the TaskFlow backend (Spring Boot).\n\n## Quick start\n1. Import this file into Postman (File → Import).\n2. The `baseUrl` variable defaults to `http://localhost:8080` (local Docker).\n   Change it to your Railway URL when testing a deployed backend.\n3. Send **Create Task** first – the response `id` is automatically saved to\n   the `taskId` variable so GET / PUT / DELETE requests work immediately.\n\n## Endpoints\n| Method | Path | Checkpoint |\n|--------|------|------------|\n| GET | /health | – |\n| GET | /actuator/health | – |\n| GET | /api/tasks | CP 3 |\n| GET | /api/tasks/:id | CP 3 |\n| POST | /api/tasks | CP 3 |\n| PUT | /api/tasks/:id | CP 3 |\n| DELETE | /api/tasks/:id | CP 3 |",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string",
+      "description": "Backend base URL. Change to your Railway URL when testing a deployed backend."
+    },
+    {
+      "key": "taskId",
+      "value": "1",
+      "type": "string",
+      "description": "Auto-populated by the 'Create Task' request. Override manually if needed."
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "description": "Verify the backend is running before testing the Task API.",
+      "item": [
+        {
+          "name": "Custom health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "GET /health\n\nReturns a simple JSON payload confirming the backend is up.\n\nExpected response (200 OK):\n```json\n{\n  \"status\": \"UP\",\n  \"service\": \"taskflow-backend\",\n  \"timestamp\": \"2024-01-15T10:30:00\"\n}\n```"
+          }
+        },
+        {
+          "name": "Spring Boot Actuator health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "GET /actuator/health\n\nSpring Boot Actuator endpoint with richer detail including database connectivity.\n\nExpected response (200 OK):\n```json\n{\n  \"status\": \"UP\",\n  \"components\": {\n    \"db\": { \"status\": \"UP\" },\n    \"diskSpace\": { \"status\": \"UP\" }\n  }\n}\n```"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tasks (Checkpoint 3)",
+      "description": "CRUD endpoints implemented in Checkpoint 3.\n\nSuggested order: Create → Get All → Get by ID → Update → Delete.",
+      "item": [
+        {
+          "name": "Get all tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks"]
+            },
+            "description": "GET /api/tasks\n\nReturns every task in the database as a JSON array.\n\nExpected response (200 OK):\n```json\n[\n  {\n    \"id\": 1,\n    \"title\": \"Buy groceries\",\n    \"description\": \"Milk, eggs, bread\",\n    \"status\": \"TODO\",\n    \"createdAt\": \"2024-01-15T10:30:00\"\n  }\n]\n```\nReturns an empty array `[]` when no tasks exist."
+          }
+        },
+        {
+          "name": "Create task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Auto-save the new task's id so the GET / PUT / DELETE",
+                  "// requests below work without any manual copy-paste.",
+                  "const task = pm.response.json();",
+                  "if (task && task.id) {",
+                  "    pm.collectionVariables.set('taskId', task.id);",
+                  "    console.log('taskId set to: ' + task.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Buy groceries\",\n  \"description\": \"Milk, eggs, bread\",\n  \"status\": \"TODO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks"]
+            },
+            "description": "POST /api/tasks\n\nCreates a new task. The `id` and `createdAt` fields are generated by the backend.\n\nRequired fields:\n- `title` (string)\n\nOptional fields:\n- `description` (string)\n- `status` (\"TODO\" | \"IN_PROGRESS\" | \"DONE\") – defaults to TODO\n\nExpected response (201 Created):\n```json\n{\n  \"id\": 1,\n  \"title\": \"Buy groceries\",\n  \"description\": \"Milk, eggs, bread\",\n  \"status\": \"TODO\",\n  \"createdAt\": \"2024-01-15T10:30:00\"\n}\n```\n\n⚡ The Tests script automatically saves `id` to the `taskId` collection variable."
+          }
+        },
+        {
+          "name": "Get task by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "{{taskId}}"]
+            },
+            "description": "GET /api/tasks/:id\n\nFetches a single task by its ID.\n\nExpected responses:\n- 200 OK – task JSON body\n- 404 Not Found – when no task exists with that ID\n\nThe `{{taskId}}` variable is auto-filled by the Create Task request."
+          }
+        },
+        {
+          "name": "Update task",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Buy groceries (updated)\",\n  \"description\": \"Milk, eggs, bread, and coffee\",\n  \"status\": \"IN_PROGRESS\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "{{taskId}}"]
+            },
+            "description": "PUT /api/tasks/:id\n\nReplaces all editable fields of an existing task.\n\nValid status values: `\"TODO\"` | `\"IN_PROGRESS\"` | `\"DONE\"`\n\nExpected responses:\n- 200 OK – updated task JSON body\n- 404 Not Found – when no task exists with that ID"
+          }
+        },
+        {
+          "name": "Mark task as DONE",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Buy groceries\",\n  \"description\": \"Milk, eggs, bread\",\n  \"status\": \"DONE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "{{taskId}}"]
+            },
+            "description": "PUT /api/tasks/:id\n\nConvenience request pre-filled with status DONE.\nUseful during Checkpoint 3 to verify status transitions."
+          }
+        },
+        {
+          "name": "Delete task",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "{{taskId}}"]
+            },
+            "description": "DELETE /api/tasks/:id\n\nPermanently removes a task from the database.\n\nExpected responses:\n- 204 No Content – task deleted (no response body)\n- 404 Not Found – when no task exists with that ID\n\nAfter deleting, call 'Get all tasks' to confirm the list is updated."
+          }
+        }
+      ]
+    }
+  ]
+}

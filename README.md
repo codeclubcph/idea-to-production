@@ -215,7 +215,7 @@ Railway creates the database and exposes connection variables (`PGHOST`, `PGPORT
 
 **3 – Deploy the backend**
 
-- **+ New** → **GitHub Repo** → select your repo → set **Root Directory** to `backend`.
+- **+ New** → **GitHub Repo** → select your repo → Settings Tab -> Source -> Set **Root Directory** to `backend`.
 - Railway detects `backend/railway.toml` and uses the `backend/Dockerfile`.
 - Go to the backend service → **Variables** → add **all five** of these:
 
@@ -231,7 +231,8 @@ Railway creates the database and exposes connection variables (`PGHOST`, `PGPORT
 > silently fall back to `localhost`, which doesn't resolve inside Railway's network,
 > and the database connection will fail.
 
-- In Settings, enable a **Public Domain** for the backend and copy the URL
+- In Settings, Networking section, enable Public Domain by use of **Generate Domain** for the backend
+- Press Deploy service and copy the URL in Settings/Networking/Public Networking
   (e.g. `https://taskflow-backend-production.up.railway.app`).
 
 ---
@@ -249,7 +250,8 @@ Railway creates the database and exposes connection variables (`PGHOST`, `PGPORT
 > ⚠️ `NEXT_PUBLIC_API_URL` is embedded into the JavaScript bundle **at build time**.
 > Set it **before** clicking Deploy (or redeploy after setting it).
 
-- Enable a **Public Domain** for the frontend and open the URL to verify.
+- Enable a **Public Domain** in **Settings/Networking/Generate Domain** for the frontend (the domain will be generated after Deploy)
+- Open the URL to verify
 
 ---
 
