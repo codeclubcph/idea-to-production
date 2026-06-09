@@ -1,81 +1,55 @@
 /**
- * Home page – the starting point for the TaskFlow frontend.
+ * Home page – TaskFlow
  *
  * This is a Next.js App Router Server Component.
- * It currently only shows a welcome screen.
+ * It fetches tasks from the backend at request time and renders them.
  *
- * =========================================================================
- * CHECKPOINT 6 – Display tasks fetched from the backend
- * =========================================================================
- * 1. Import `fetchTasks` from "@/lib/api"
- * 2. Call it here (this is an async Server Component, so you can await it)
- * 3. Import and render a <TaskList tasks={tasks} /> component
- *
- * Example:
- *   import { fetchTasks } from "@/lib/api";
- *   import TaskList from "@/components/TaskList";
- *
- *   const tasks = await fetchTasks();
- *   return <TaskList tasks={tasks} />;
- * =========================================================================
- *
- * =========================================================================
- * CHECKPOINT 7 – Allow users to create tasks from the UI
- * =========================================================================
- * Add a <TaskForm /> component that calls `createTask` from "@/lib/api"
- * and refreshes the task list after submission.
- * =========================================================================
+ * Checkpoint 6: Displays tasks from the backend via <TaskList />.
+ * Checkpoint 7: Includes <TaskForm /> to create new tasks.
  */
 
-export default function HomePage() {
+import { fetchTasks } from "@/lib/api";
+import TaskList from "@/components/TaskList";
+import TaskFormWrapper from "@/components/TaskFormWrapper";
+
+export default async function HomePage() {
+  let tasks = [];
+  let fetchError: string | null = null;
+
+  try {
+    tasks = await fetchTasks();
+  } catch {
+    fetchError = "Could not reach the backend. Is it running?";
+  }
+
   return (
     <main>
-      {/* ----------------------------------------------------------------
-          Workshop welcome banner – participants can replace this content
-          ---------------------------------------------------------------- */}
       <div className="card">
         <h1>🚀 TaskFlow</h1>
-        <h2>Workshop Starter</h2>
+        <h2>Workshop App</h2>
         <p>
-          Welcome to the <strong>Fullstack Development Workshop</strong>!
-          This page is your starting point. Follow the checkpoints in the{" "}
-          <code>README.md</code> to build the full application.
+          A simple task manager built during the{" "}
+          <strong>Fullstack Development Workshop</strong>.
         </p>
       </div>
 
-      {/* ----------------------------------------------------------------
-          Checkpoint progress card
-          ---------------------------------------------------------------- */}
+      {/* Checkpoint 7 – task creation form */}
       <div className="card">
-        <h2>📋 Workshop Checkpoints</h2>
-        <ol style={{ paddingLeft: "1.25rem", color: "#555" }}>
-          <li>Create Task repository</li>
-          <li>Create Task service</li>
-          <li>Create CRUD REST endpoints</li>
-          <li>Test API using Postman</li>
-          <li>Connect frontend to backend</li>
-          <li>Display tasks in UI ← you are here</li>
-          <li>Create tasks from UI</li>
-          <li>Persist tasks in PostgreSQL</li>
-          <li>Containerise and understand architecture</li>
-          <li>Deploy application</li>
-        </ol>
+        <h2>➕ New Task</h2>
+        <TaskFormWrapper />
       </div>
 
-      {/* ----------------------------------------------------------------
-          TODO [Checkpoint 6]: Replace this placeholder with a real task list
-          ---------------------------------------------------------------- */}
+      {/* Checkpoint 6 – task list */}
       <div className="card">
         <h2>📝 Tasks</h2>
-        <p>
-          <em>No tasks yet.</em> Complete Checkpoints 1–5 first, then replace
-          this placeholder with your <code>&lt;TaskList /&gt;</code> component.
-        </p>
+        {fetchError ? (
+          <p role="alert" style={{ color: "#c00" }}>
+            {fetchError}
+          </p>
+        ) : (
+          <TaskList tasks={tasks} />
+        )}
       </div>
-
-      {/* ----------------------------------------------------------------
-          TODO [Checkpoint 7]: Add a task creation form here
-          ---------------------------------------------------------------- */}
     </main>
   );
 }

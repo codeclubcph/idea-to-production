@@ -20,21 +20,17 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
 // -------------------------------------------------------------------------
-// TODO [Checkpoint 5]: Implement these API functions
+// Checkpoint 5 – API functions
 // -------------------------------------------------------------------------
 
 /**
  * Fetch all tasks from the backend.
  * Calls: GET /api/tasks
- *
- * Example implementation:
- *   const res = await fetch(`${API_BASE_URL}/api/tasks`);
- *   if (!res.ok) throw new Error("Failed to fetch tasks");
- *   return res.json();
  */
 export async function fetchTasks(): Promise<Task[]> {
-  // TODO: implement
-  throw new Error("fetchTasks() not implemented yet – Checkpoint 5");
+  const res = await fetch(`${API_BASE_URL}/api/tasks`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch tasks");
+  return res.json();
 }
 
 /**
@@ -42,8 +38,11 @@ export async function fetchTasks(): Promise<Task[]> {
  * Calls: GET /api/tasks/{id}
  */
 export async function fetchTask(id: number): Promise<Task> {
-  // TODO: implement
-  throw new Error("fetchTask() not implemented yet – Checkpoint 5");
+  const res = await fetch(`${API_BASE_URL}/api/tasks/${id}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`Failed to fetch task ${id}`);
+  return res.json();
 }
 
 /**
@@ -51,8 +50,13 @@ export async function fetchTask(id: number): Promise<Task> {
  * Calls: POST /api/tasks
  */
 export async function createTask(data: CreateTaskRequest): Promise<Task> {
-  // TODO: implement
-  throw new Error("createTask() not implemented yet – Checkpoint 5");
+  const res = await fetch(`${API_BASE_URL}/api/tasks`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to create task");
+  return res.json();
 }
 
 /**
@@ -63,8 +67,13 @@ export async function updateTask(
   id: number,
   data: UpdateTaskRequest
 ): Promise<Task> {
-  // TODO: implement
-  throw new Error("updateTask() not implemented yet – Checkpoint 5");
+  const res = await fetch(`${API_BASE_URL}/api/tasks/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Failed to update task ${id}`);
+  return res.json();
 }
 
 /**
@@ -72,6 +81,8 @@ export async function updateTask(
  * Calls: DELETE /api/tasks/{id}
  */
 export async function deleteTask(id: number): Promise<void> {
-  // TODO: implement
-  throw new Error("deleteTask() not implemented yet – Checkpoint 5");
+  const res = await fetch(`${API_BASE_URL}/api/tasks/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error(`Failed to delete task ${id}`);
 }
