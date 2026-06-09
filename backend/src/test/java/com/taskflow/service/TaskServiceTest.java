@@ -33,7 +33,6 @@ import static org.mockito.Mockito.*;
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Checkpoint 2 – TaskService")
-@Disabled
 class TaskServiceTest {
 
     @Mock

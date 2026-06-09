@@ -34,46 +34,43 @@ public class TaskService {
 
     /**
      * Returns all tasks from the database.
-     * Hint: use taskRepository.findAll()
      */
     public List<Task> getAllTasks() {
-        // TODO: implement
-        throw new UnsupportedOperationException("getAllTasks() not implemented yet – Checkpoint 2");
+        return taskRepository.findAll();
     }
 
     /**
      * Finds a single task by its ID.
-     * Hint: use taskRepository.findById(id) – it returns an Optional<Task>
+     * Throws RuntimeException if the task doesn't exist.
      */
     public Task getTaskById(Long id) {
-        // TODO: implement
-        throw new UnsupportedOperationException("getTaskById() not implemented yet – Checkpoint 2");
+        return taskRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Task not found with id: " + id));
     }
 
     /**
      * Creates and saves a new task.
-     * Hint: use taskRepository.save(task)
      */
     public Task createTask(Task task) {
-        // TODO: implement
-        throw new UnsupportedOperationException("createTask() not implemented yet – Checkpoint 2");
+        return taskRepository.save(task);
     }
 
     /**
      * Updates an existing task.
-     * Hint: fetch the existing task first, update its fields, then save.
+     * Fetches the existing task, updates its fields, then saves.
      */
     public Task updateTask(Long id, Task updatedTask) {
-        // TODO: implement
-        throw new UnsupportedOperationException("updateTask() not implemented yet – Checkpoint 2");
+        Task existing = getTaskById(id);
+        existing.setTitle(updatedTask.getTitle());
+        existing.setDescription(updatedTask.getDescription());
+        existing.setStatus(updatedTask.getStatus());
+        return taskRepository.save(existing);
     }
 
     /**
      * Deletes a task by its ID.
-     * Hint: use taskRepository.deleteById(id)
      */
     public void deleteTask(Long id) {
-        // TODO: implement
-        throw new UnsupportedOperationException("deleteTask() not implemented yet – Checkpoint 2");
+        taskRepository.deleteById(id);
     }
 }
