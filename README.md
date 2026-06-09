@@ -25,7 +25,7 @@ Make sure the following are installed before the workshop:
 
 ```bash
 # 1. Clone the repository
-git clone <repository-url>
+git clone https://github.com/codeclubcph/idea-to-production.git
 cd idea-to-production
 
 # 2. Create your environment file
