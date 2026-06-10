@@ -6,6 +6,15 @@ import { render, screen } from "@testing-library/react";
 import TaskList from "./TaskList";
 import type { Task } from "@/types/task";
 
+// TaskCard (rendered inside TaskList) is a client component that uses these.
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: jest.fn() }),
+}));
+jest.mock("@/lib/api", () => ({
+  updateTask: jest.fn(),
+  deleteTask: jest.fn(),
+}));
+
 const makeTask = (id: number, title: string): Task => ({
   id,
   title,

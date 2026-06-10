@@ -1,23 +1,54 @@
 /**
- * TaskCard – Checkpoint 6
+ * TaskCard – Checkpoint 6 + 8
  *
- * Displays a single task: title, optional description, status badge,
- * and the creation timestamp.
+ * Displays a single task: title, optional description, status selector,
+ * creation timestamp, and a delete button.
  */
 
-import type { Task } from "@/types/task";
-import StatusBadge from "./StatusBadge";
+"use client";
+
+import { useRouter } from "next/navigation";
+import type { Task, TaskStatus } from "@/types/task";
+import { updateTask, deleteTask } from "@/lib/api";
 
 interface TaskCardProps {
   task: Task;
 }
 
+const STATUS_LABELS: Record<TaskStatus, string> = {
+  TODO: "To Do",
+  IN_PROGRESS: "In Progress",
+  DONE: "Done",
+};
+
+const STATUS_COLORS: Record<TaskStatus, string> = {
+  TODO: "#e3f2fd",
+  IN_PROGRESS: "#fff8e1",
+  DONE: "#e8f5e9",
+};
+
 export default function TaskCard({ task }: TaskCardProps) {
+  const router = useRouter();
+
   const formattedDate = new Date(task.createdAt).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
     year: "numeric",
   });
+
+  async function handleStatusChange(newStatus: TaskStatus) {
+    await updateTask(task.id, {
+      title: task.title,
+      description: task.description ?? undefined,
+      status: newStatus,
+    });
+    router.refresh();
+  }
+
+  async function handleDelete() {
+    await deleteTask(task.id);
+    router.refresh();
+  }
 
   return (
     <div
@@ -53,7 +84,46 @@ export default function TaskCard({ task }: TaskCardProps) {
           Created {formattedDate}
         </p>
       </div>
-      <StatusBadge status={task.status} />
+
+      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+        <select
+          data-testid="status-select"
+          value={task.status}
+          onChange={(e) => handleStatusChange(e.target.value as TaskStatus)}
+          style={{
+            background: STATUS_COLORS[task.status],
+            border: "1px solid #ccc",
+            borderRadius: "12px",
+            padding: "0.25rem 0.5rem",
+            fontSize: "0.75rem",
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          {(Object.keys(STATUS_LABELS) as TaskStatus[]).map((s) => (
+            <option key={s} value={s}>
+              {STATUS_LABELS[s]}
+            </option>
+          ))}
+        </select>
+
+        <button
+          data-testid="delete-button"
+          onClick={handleDelete}
+          aria-label="Delete task"
+          style={{
+            background: "transparent",
+            border: "1px solid #f44336",
+            borderRadius: "6px",
+            color: "#f44336",
+            cursor: "pointer",
+            fontSize: "0.75rem",
+            padding: "0.25rem 0.5rem",
+          }}
+        >
+          Delete
+        </button>
+      </div>
     </div>
   );
 }

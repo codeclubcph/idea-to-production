@@ -75,6 +75,9 @@ services:
     container_name: taskflow-frontend
     environment:
       NODE_ENV: production
+      # Server-side URL: Next.js SSR runs inside the container, so it must
+      # reach the backend via Docker's internal network, not localhost.
+      INTERNAL_API_URL: http://backend:8080
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     depends_on:

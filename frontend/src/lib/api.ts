@@ -15,9 +15,21 @@
 
 import type { Task, CreateTaskRequest, UpdateTaskRequest } from "@/types/task";
 
-/** Base URL of the backend API. Falls back to localhost for local development. */
+/**
+ * Base URL of the backend API.
+ *
+ * Two contexts exist:
+ *  - Server-side (Next.js SSR inside Docker): use INTERNAL_API_URL so the
+ *    request stays on Docker's internal network (e.g. http://backend:8080).
+ *  - Client-side (browser): use NEXT_PUBLIC_API_URL which is baked into the
+ *    bundle at build time and must be reachable from the user's machine.
+ *
+ * Falls back to localhost:8080 for local `npm run dev` without Docker.
+ */
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+  typeof window === "undefined"
+    ? (process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080")
+    : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080");
 
 // -------------------------------------------------------------------------
 // Checkpoint 5 – API functions
